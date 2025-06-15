@@ -28,7 +28,8 @@ app.post("/register", async (req, res) => {
 });
 
 // Login
-app.get("/login", async (req, res) => {
+app.post("/login", async (req, res) => {
+  console.log(req.body);
   const { username, password } = req.body;
   if (!username || !password)
     throw new Error("No username or password provided");
