@@ -46,7 +46,7 @@ app.post("/login", async (req, res) => {
 
 // Protected Route
 app.get("/dashboard", authenticateToken, (req, res) => {
-  console.log(req.user)
+  console.log(req.user);
   res.json({ message: "Welcome to the dashboard" });
 });
 
@@ -54,6 +54,24 @@ app.get("/user-info", authenticateToken, async (req, res) => {
   const user = await User.findById(req.user.id).select("-password");
   if (!user) return res.status(404).json({ error: "User not found" });
   res.json(user);
+});
+
+app.patch("/user-info", authenticateToken, async (req, res) => {
+  const updates = {};
+  if (req.body.username) updates.username = req.body.username;
+  if (req.body.password)
+    updates.password = await bcrypt.hash(req.body.password, 10);
+
+  try {
+    const user = await User.findByIdAndUpdate(req.user.id, updates, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (e) {
+    res.status(400).json({ error: "Update failed", details: e.message });
+  }
 });
 
 const start = async () => {
