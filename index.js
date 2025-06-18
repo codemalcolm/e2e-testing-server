@@ -92,7 +92,22 @@ app.post("/posts", authenticateToken, async (req, res) => {
 });
 
 // posts of a single user
-app.get("/user-info/posts", authenticateToken, async (req, res) => {});
+app.get("/user-info/posts", authenticateToken, async (req, res) => {
+  const { id: userId } = req.user;
+
+  try {
+    const posts = await Post.find({
+      authorId: userId,
+    });
+
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ message: "You have no posts yet" });
+    }
+    res.json({ count: posts.length, posts: posts });
+  } catch (error) {
+    res.json(error);
+  }
+});
 
 // posts from all users on homepage
 app.get("/posts", async (req, res) => {});
