@@ -3,6 +3,7 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("./models/User.js");
+const Post = require("./models/Post.js");
 const authenticateToken = require("./middleware/authenticateToken.js");
 require("dotenv").config();
 
@@ -73,6 +74,29 @@ app.patch("/user-info", authenticateToken, async (req, res) => {
     res.status(400).json({ error: "Update failed", details: e.message });
   }
 });
+
+// add post
+app.post("/posts", authenticateToken, async (req, res) => {
+  const { title, postText } = req.body;
+  console.log(title, " ", postText);
+  if (!title || !postText)
+    return res.status(400).json({ error: "Missing field" });
+
+  const post = await Post.create(req.body);
+  res.json(post);
+});
+
+// posts of a single user
+app.get("/user-info/posts", authenticateToken, async (req, res) => {});
+
+// posts from all users on homepage
+app.get("/posts", async (req, res) => {});
+
+// editting post
+app.patch("/posts", authenticateToken, async (req, res) => {});
+
+// deleting post
+app.delete("/user-info/posts", authenticateToken, async (req, res) => {});
 
 const start = async () => {
   try {
