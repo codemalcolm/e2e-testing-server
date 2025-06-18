@@ -3,6 +3,7 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("./models/User.js");
+const authenticateToken = require("./middleware/authenticateToken.js");
 require("dotenv").config();
 
 const app = express();
@@ -44,16 +45,15 @@ app.post("/login", async (req, res) => {
 });
 
 // Protected Route
-app.get("/dashboard", (req, res) => {
-  const auth = req.headers.authorization?.split(" ")[1];
-  if (!auth) return res.status(401).json({ error: "No token" });
+app.get("/dashboard", authenticateToken, (req, res) => {
+  console.log(req.user)
+  res.json({ message: "Welcome to the dashboard" });
+});
 
-  try {
-    jwt.verify(auth, process.env.JWT_SECRET);
-    res.json({ message: "Welcome to the dashboard!" });
-  } catch {
-    res.status(403).json({ error: "Invalid token" });
-  }
+app.get("/user-info", authenticateToken, async (req, res) => {
+  const user = await User.findById(req.user.id).select("-password");
+  if (!user) return res.status(404).json({ error: "User not found" });
+  res.json(user);
 });
 
 const start = async () => {
