@@ -78,11 +78,16 @@ app.patch("/user-info", authenticateToken, async (req, res) => {
 // add post
 app.post("/posts", authenticateToken, async (req, res) => {
   const { title, postText } = req.body;
-  console.log(title, " ", postText);
+  const { id: userId } = req.user;
+
   if (!title || !postText)
     return res.status(400).json({ error: "Missing field" });
 
-  const post = await Post.create(req.body);
+  const post = await Post.create({
+    title: title,
+    postText: postText,
+    authorId: userId,
+  });
   res.json(post);
 });
 
