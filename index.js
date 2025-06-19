@@ -124,7 +124,31 @@ app.get("/posts", async (req, res) => {
 });
 
 // editting post
-app.patch("/posts", authenticateToken, async (req, res) => {});
+app.patch("/posts/:taskId", authenticateToken, async (req, res) => {
+  const { title, postText } = req.body;
+  const { taskId } = req.params;
+  
+  if (!title || !postText)
+    return res.status(400).json({ error: "Missing fields" });
+
+  const post = await Post.findById(taskId);
+  if (!post)
+    return res
+      .status(404)
+      .json({ error: `Post with id: ${taskId} was not found` });
+
+  if (post.authorId.toString() !== req.user.id)
+    return res
+      .status(401)
+      .json({ error: "Cannot edit posts that you don't own" });
+
+  const edittedPost = await Post.findOneAndUpdate({ _id: taskId }, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.json(edittedPost);
+});
 
 // deleting post
 app.delete("/user-info/posts", authenticateToken, async (req, res) => {});
