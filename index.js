@@ -127,7 +127,7 @@ app.get("/posts", async (req, res) => {
 app.patch("/posts/:taskId", authenticateToken, async (req, res) => {
   const { title, postText } = req.body;
   const { taskId } = req.params;
-  
+
   if (!title || !postText)
     return res.status(400).json({ error: "Missing fields" });
 
@@ -137,7 +137,7 @@ app.patch("/posts/:taskId", authenticateToken, async (req, res) => {
       .status(404)
       .json({ error: `Post with id: ${taskId} was not found` });
 
-  if (post.authorId.toString() !== req.user.id)
+  if (post.authorId.toString() !== req.user.id.toString())
     return res
       .status(401)
       .json({ error: "Cannot edit posts that you don't own" });
@@ -151,7 +151,23 @@ app.patch("/posts/:taskId", authenticateToken, async (req, res) => {
 });
 
 // deleting post
-app.delete("/user-info/posts", authenticateToken, async (req, res) => {});
+app.delete("/posts/:taskId", authenticateToken, async (req, res) => {
+  const { taskId } = req.params;
+  const post = await Post.findById(taskId);
+  if (!post)
+    return res
+      .status(404)
+      .json({ error: `Post with id: ${taskId} was not found` });
+
+  if (post.authorId.toString() !== req.user.id.toString())
+    return res
+      .status(401)
+      .json({ error: "Cannot delete posts that you don't own" });
+
+  const deletedPost = await Post.findByIdAndDelete({ _id: taskId });
+
+  res.json(deletedPost);
+});
 
 const start = async () => {
   try {
