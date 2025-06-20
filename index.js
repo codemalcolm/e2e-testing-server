@@ -19,7 +19,7 @@ const port = process.env.PORT || 5000;
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password)
-    throw new Error("No username or password provided");
+    res.status(400).json({ error: "No username or password provided" });
   const hashed = await bcrypt.hash(password, 10);
   try {
     await User.create({ username, password: hashed });
@@ -34,7 +34,7 @@ app.post("/login", async (req, res) => {
   console.log(req.body);
   const { username, password } = req.body;
   if (!username || !password)
-    throw new Error("No username or password provided");
+    res.status(400).json({ error: "No username or password provided" });
   const user = await User.findOne({ username });
   if (!user) return res.status(400).json({ error: "User not found" });
 
@@ -112,7 +112,7 @@ app.get("/user-info/posts", authenticateToken, async (req, res) => {
 // posts from all users on homepage
 app.get("/posts", async (req, res) => {
   try {
-    const posts = (await Post.find().populate('authorId', '-password -__v'));
+    const posts = await Post.find().populate("authorId", "-password -__v");
 
     if (!posts || posts.length === 0) {
       return res.status(404).json({ message: "There are no posts yet" });
