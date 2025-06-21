@@ -169,6 +169,31 @@ app.delete("/posts/:taskId", authenticateToken, async (req, res) => {
   res.json(deletedPost);
 });
 
+app.delete("/data", async (req, res) => {
+  try {
+    const postDeleteResult = await Post.deleteMany({});
+    console.log(`Deleted ${postDeleteResult.deletedCount} posts.`);
+
+    const userDeleteResult = await User.deleteMany({});
+    console.log(`Deleted ${userDeleteResult.deletedCount} users.`);
+
+    res.status(200).json({
+      message:
+        'All data from "posts" and "users" collections deleted successfully.',
+      deletedCounts: {
+        posts: postDeleteResult.deletedCount,
+        users: userDeleteResult.deletedCount,
+      },
+    });
+  } catch (error) {
+    console.error("Error deleting data:", error);
+    res.status(500).json({
+      message: "An error occurred while deleting data.",
+      error: error.message,
+    });
+  }
+});
+
 const start = async () => {
   try {
     await connectDB(process.env.MONGO_URI);
