@@ -42,7 +42,7 @@ app.post("/login", async (req, res) => {
   if (!isMatch) return res.status(401).json({ error: "Wrong password" });
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-  res.json({ token });
+  res.json({ message: "User logged in", token });
 });
 
 // Protected Route
